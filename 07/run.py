@@ -10,7 +10,7 @@ def read(filename):
 
 
 def parse_bags(line):
-    key_match = re.match("^(\w+ \w+) bags contain ", line)
+    key_match = re.match(r"^(\w+ \w+) bags contain ", line)
     key = key_match.groups()[0]
     content = line[key_match.end():]
     if content == "no other bags.":
@@ -19,7 +19,7 @@ def parse_bags(line):
     parts = content.split(",")
     contents = []
     for part in parts:
-        content_match = re.match("^(\d+) (\w+ \w+)", part.strip())
+        content_match = re.match(r"^(\d+) (\w+ \w+)", part.strip())
         groups = content_match.groups()
         contents.append(
             (groups[1], int(groups[0]))
