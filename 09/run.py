@@ -4,16 +4,15 @@ LENGTH = 25
 
 
 def read(filename):
-    data = []
+    data = array.array('Q')
     with open(filename, 'r') as reader:
         for line in reader.readlines():
-            data.append(int(line.strip()))
+            data.append(int(line))
     return data
 
 
 def solve(numbers):
     preamble = array.array('Q', numbers[:LENGTH])
-
     for number in numbers[LENGTH:]:
         if find_sum(preamble, number) is False:
             return number
@@ -40,10 +39,7 @@ def solve2(numbers, target):
 
 
 if __name__ == "__main__":
-    data = read('input.txt')
-    numbers = array.array('Q')
-    numbers.fromlist(data)
-
+    numbers = read('input.txt')
     invalid_number = solve(numbers)
 
     print(invalid_number)
