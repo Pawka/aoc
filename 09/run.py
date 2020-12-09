@@ -1,18 +1,13 @@
-import array
-
 LENGTH = 25
 
 
 def read(filename):
-    data = array.array('Q')
     with open(filename, 'r') as reader:
-        for line in reader.readlines():
-            data.append(int(line))
-    return data
+        return [int(line) for line in reader.readlines()]
 
 
 def solve(numbers):
-    preamble = array.array('Q', numbers[:LENGTH])
+    preamble = numbers[:LENGTH]
     for number in numbers[LENGTH:]:
         if find_sum(preamble, number) is False:
             return number
