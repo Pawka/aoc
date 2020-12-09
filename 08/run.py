@@ -32,6 +32,16 @@ class CPU():
             self.memory.append(Op(op, int(value)))
         self.orig_memory = self.memory.copy()
 
+    def _acc(self, a):
+        self.acc += a
+        self.pc += 1
+
+    def _jmp(self, a):
+        self.pc += a
+
+    def _nop(self, a):
+        self.pc += 1
+
     def run(self):
         self.pc = 0
         seen = set()
@@ -74,16 +84,6 @@ class CPU():
 
             self.ops[op.op](op.a)
         return self.acc
-
-    def _acc(self, a):
-        self.acc += a
-        self.pc += 1
-
-    def _jmp(self, a):
-        self.pc += a
-
-    def _nop(self, a):
-        self.pc += 1
 
 
 def solve(lines):
