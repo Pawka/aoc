@@ -1,3 +1,5 @@
+from collections import deque
+
 LENGTH = 25
 
 
@@ -7,11 +9,10 @@ def read(filename):
 
 
 def solve(numbers):
-    preamble = numbers[:LENGTH]
+    preamble = deque(numbers[:LENGTH], LENGTH)
     for number in numbers[LENGTH:]:
         if find_sum(preamble, number) is False:
             return number
-        preamble.pop(0)
         preamble.append(number)
 
 
