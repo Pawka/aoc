@@ -1,3 +1,6 @@
+import collections
+
+
 def read(filename):
     with open(filename, 'r') as reader:
         return [line.strip() for line in reader.readlines()]
@@ -19,30 +22,41 @@ def solve(data):
 
 def solve2(data):
     parts = [int(x) if x.isnumeric() else 0 for x in data[1].split(',')]
-
     diffs = {}
+    numbers = []
     for k, p in enumerate(parts):
         if p > 0:
             diffs[p] = k
-    highest = max(parts)
+            numbers.append(p)
 
+    idiffs = collections.OrderedDict({
+        numbers[0]: diffs[numbers[0]],
+        numbers[1]: diffs[numbers[1]],
+    })
     ts = 0
+    increase = numbers[0]
     while True:
-        ts += highest
-        print(ts)
-        if check(diffs, ts, highest):
-            return ts - diffs[highest]
+        if check(idiffs, ts):
+            if len(idiffs) == len(numbers):
+                return ts
+            increase = 1
+            for k in idiffs:
+                increase *= k
+            next_bus = numbers[len(idiffs)]
+            idiffs[next_bus] = diffs[next_bus]
+        ts += increase
+
+    return ts
 
 
-def check(diffs, ts, highest):
-    fixed_ts = ts - diffs[highest]
+def check(diffs, ts):
     for bus in diffs:
-        if (fixed_ts % bus + diffs[bus]) % bus != 0:
+        if (ts % bus + diffs[bus]) % bus != 0:
             return False
     return True
 
 
 if __name__ == "__main__":
     data = read('input.txt')
-    # print(solve(data))
+    print(solve(data))
     print(solve2(data))
