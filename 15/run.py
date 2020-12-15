@@ -6,7 +6,7 @@ def read(name):
         return [l.strip() for l in reader.readlines()]
 
 
-def solve(data):
+def solve(data, target):
     positions = {}
 
     for k, d in enumerate(data):
@@ -16,7 +16,7 @@ def solve(data):
 
     i = len(data)
     current = data[-1]
-    while i < 2020:
+    while i < target:
         last = positions.get(current, None)
         positions[current] = i-1
         if last is None:
@@ -35,5 +35,5 @@ def solve2(data):
 if __name__ == "__main__":
     input1 = [12, 1, 16, 3, 11, 0]
     input2 = [0, 3, 6]
-    print(solve(input1))
-    # print(solve2(data))
+    print(solve(input1, 2020))
+    print(solve(input1, 30000000))
