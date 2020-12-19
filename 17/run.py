@@ -63,8 +63,11 @@ def solve2(data):
         hcube = new_hcube
 
     total_cubes = 0
-    for cube in hcube:
-        total_cubes += cube_sum(cube)
+    for k, cube in enumerate(hcube):
+        multiplier = 1
+        if k > 0:
+            multiplier = 2
+        total_cubes += multiplier * cube_sum(cube)
 
     return total_cubes
 
@@ -150,6 +153,17 @@ test_hcube = [
     ],
 ]
 assert get_hfriends(test_hcube, 1, 1, 0, 0, Dimmensions(2, 2, 3, 3)) == 56
+test_hcube2 = [
+    [
+        [[0, 0, 0], [0, 1, 0], [0, 0, 0]],
+        [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+    ],
+    [
+        [[0, 0, 0], [1, 0, 0], [0, 0, 0]],
+        [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+    ],
+]
+assert get_hfriends(test_hcube2, 1, 1, 0, 0, Dimmensions(2, 2, 3, 3)) == 2
 
 
 def is_active(cube, row, col, depth, dimm):
@@ -176,9 +190,9 @@ def is_hactive(hcube, row, col, depth, time, dimm):
 
 
 assert is_hactive([[test_case]], 1, 0, 0, 0, test_dimmensions) is True
-
+assert is_hactive(test_hcube2, 1, 1, 0, 0, Dimmensions(2, 2, 3, 3)) is True
 
 if __name__ == "__main__":
-    data = read('input2.txt')
+    data = read('input.txt')
     print(solve(data))
     print(solve2(data))
