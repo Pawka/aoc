@@ -1,7 +1,7 @@
 from pprint import pprint
 from collections import namedtuple
 
-Dimmensions = namedtuple('Dimmensions', 'size height width time')
+Dimmensions = namedtuple('Dimmensions', 'time size height width')
 
 
 def read(name):
@@ -15,9 +15,8 @@ def read(name):
 
 def solve(data):
     cube = [data]
-
     for _ in range(6):
-        dimm = Dimmensions(len(cube), len(cube[0]), len(cube[0][0]), 1)
+        dimm = Dimmensions(1, len(cube), len(cube[0]), len(cube[0][0]))
 
         new_cube = []
         for depth in range(0, dimm.size+1):
@@ -31,12 +30,62 @@ def solve(data):
             new_cube.append(new_row)
         cube = new_cube
 
+    return cube_sum(cube)
+
+
+def cube_sum(cube):
     total_cubes = sum([val for sublist in cube[0] for val in sublist])
     total_cubes += 2 * sum([val for z in cube[1:] for r in z for val in r])
     return total_cubes
 
 
-def get_friends(cube, row, col, depth, dimm):
+def solve2(data):
+    hcube = [[data]]
+    for _ in range(6):
+        dimm = Dimmensions(
+                len(hcube),
+                len(hcube[0]),
+                len(hcube[0][0]),
+                len(hcube[0][0][0]))
+        new_hcube = []
+        for time in range(0, dimm.time+1):
+            new_cube = []
+            for depth in range(0, dimm.size+1):
+                new_row = []
+                for row in range(-1, dimm.height+1):
+                    new_col = []
+                    for col in range(-1, dimm.width+1):
+                        active = is_hactive(hcube, row, col, depth, time, dimm)
+                        new_col.append(int(active))
+                    new_row.append(new_col)
+                new_cube.append(new_row)
+            new_hcube.append(new_cube)
+        hcube = new_hcube
+
+    total_cubes = 0
+    for cube in hcube:
+        total_cubes += cube_sum(cube)
+
+    return total_cubes
+
+
+def get_hfriends(hcube, row, col, depth, time, dimm):
+    count = 0
+    for t in range(time-1, 1+min(time+1, dimm.time-1)):
+        t_tocheck = t
+        if t < 0:
+            if dimm.time == 1:
+                continue
+            t_tocheck = min(1, dimm.time-1)
+
+        inclusive = not t == time
+        friends = get_friends(
+                hcube[t_tocheck], row, col, depth, dimm, inclusive)
+        count += friends
+    return count
+
+
+def get_friends(cube, row, col, depth, dimm, inc=False):
     count = 0
     for z in range(depth-1, 1+min(depth+1, dimm.size-1)):
         z_tocheck = z
@@ -45,7 +94,7 @@ def get_friends(cube, row, col, depth, dimm):
                 continue
             z_tocheck = min(1, dimm.size-1)
 
-        inclusive = not z == depth
+        inclusive = inc or not z == depth
         count += get_flat_friends(
                 cube[z_tocheck], row, col, dimm, inclusive)
     return count
@@ -68,7 +117,7 @@ def get_flat_friends(matrix, row, col, dimm, inclusive=False):
 ###
 """
 test_case = read('input2.txt')
-test_dimmensions = Dimmensions(1, 3, 3, 1)
+test_dimmensions = Dimmensions(1, 1, 3, 3)
 assert get_flat_friends(test_case, 0, 0, test_dimmensions) == 1
 assert get_flat_friends(test_case, 0, 1, test_dimmensions) == 1
 assert get_flat_friends(test_case, 1, 0, test_dimmensions) == 3
@@ -84,9 +133,23 @@ assert get_friends([test_case], 1, 1, 0, test_dimmensions) == 5
 assert get_friends([test_case], 0, 0, 1, test_dimmensions) == 1
 assert get_friends([test_case], 1, 0, 0, test_dimmensions) == 3
 assert get_friends(
-        [test_case, test_case], 1, 1, 0, Dimmensions(2, 3, 3, 1)) == 15
+        [test_case, test_case], 1, 1, 0, Dimmensions(1, 2, 3, 3)) == 15
 assert get_friends(
-        [test_case, test_case], 1, 1, 1, Dimmensions(2, 3, 3, 1)) == 10
+        [test_case, test_case], 1, 1, 1, Dimmensions(1, 2, 3, 3)) == 10
+
+assert get_hfriends(
+        [[test_case, test_case]], 1, 1, 1, 1, Dimmensions(1, 2, 3, 3)) == 10
+test_hcube = [
+    [
+        [[0, 0, 0], [0, 1, 0], [0, 0, 0]],
+        [[0, 0, 0], [1, 0, 0], [0, 0, 0]],
+    ],
+    [
+        [[1, 1, 1], [1, 1, 1], [1, 1, 1]],
+        [[1, 1, 1], [1, 1, 1], [1, 1, 1]],
+    ],
+]
+assert get_hfriends(test_hcube, 1, 1, 0, 0, Dimmensions(2, 2, 3, 3)) == 56
 
 
 def is_active(cube, row, col, depth, dimm):
@@ -101,6 +164,21 @@ def is_active(cube, row, col, depth, dimm):
 assert is_active([test_case], 1, 0, 0, test_dimmensions) is True
 
 
+def is_hactive(hcube, row, col, depth, time, dimm):
+    friends = get_hfriends(hcube, row, col, depth, time, dimm)
+    if (row < 0 or row >= dimm.height
+            or col < 0 or col >= dimm.width
+            or depth < 0 or depth >= dimm.size
+            or time >= dimm.time
+            or hcube[time][depth][row][col] == 0):
+        return friends == 3
+    return (hcube[time][depth][row][col] == 1 and friends in [2, 3])
+
+
+assert is_hactive([[test_case]], 1, 0, 0, 0, test_dimmensions) is True
+
+
 if __name__ == "__main__":
-    data = read('input.txt')
+    data = read('input2.txt')
     print(solve(data))
+    print(solve2(data))
