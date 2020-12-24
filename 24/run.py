@@ -66,6 +66,10 @@ def get_blacks(grid, row, col):
         drow, dcol = MAP[k]
         if grid[row+drow][col+dcol] == -1:
             total += 1
+            # We do not care if it is 3 or more. It is already more than 2 for
+            # black. Little optimization saved ~0.15s
+            if total == 3:
+                break
     return total
 
 
@@ -74,15 +78,15 @@ def solve2(grid):
     for day in range(100):
         updates = []
         for row in range(size-1):
-            # TODO: this can be optimized with step of 2.
-            for col in range(size-2):
+            for col in range(0, size-2, 2):
+                if row % 2 != 0:
+                    col += 1
                 color = grid[row][col]
-                if color != 0:
-                    blacks = get_blacks(grid, row, col)
-                    if color == -1 and (blacks == 0 or blacks > 2):
-                        updates.append((row, col))
-                    elif color == 1 and blacks == 2:
-                        updates.append((row, col))
+                blacks = get_blacks(grid, row, col)
+                if color == -1 and (blacks == 0 or blacks > 2):
+                    updates.append((row, col))
+                elif color == 1 and blacks == 2:
+                    updates.append((row, col))
         for row, col in updates:
             grid[row][col] *= -1
     return count(grid)
