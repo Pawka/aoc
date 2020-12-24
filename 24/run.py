@@ -24,20 +24,22 @@ def get_grid(size=100, color=1):
     return grid
 
 
+MAP = {
+    "se": (1, 1),
+    "sw": (1, -1),
+    "ne": (-1, 1),
+    "nw": (-1, -1),
+    "w": (0, -2),
+    "e": (0, 2),
+}
+
+
 def get_coordinations(name):
-    m = {
-        "se": (1, 1),
-        "sw": (1, -1),
-        "ne": (-1, 1),
-        "nw": (-1, -1),
-        "w": (0, -2),
-        "e": (0, 2),
-    }
-    return m[name]
+    return MAP[name]
 
 
 def solve(data):
-    size = 100
+    size = 250
     grid = get_grid(size)
 
     start = (int(size/2), int(size/2))
@@ -51,10 +53,44 @@ def solve(data):
             if grid[current[0]][current[1]] == 0:
                 return "Something wrong"
         grid[current[0]][current[1]] *= -1
+    return grid
 
+
+def count(grid):
     return len([x for row in grid for x in row if x == -1])
+
+
+def get_blacks(grid, row, col):
+    total = 0
+    for k in MAP:
+        drow, dcol = MAP[k]
+        if grid[row+drow][col+dcol] == -1:
+            total += 1
+    return total
+
+
+def solve2(grid):
+    size = len(grid)
+    for day in range(100):
+        updates = []
+        for row in range(size-1):
+            # TODO: this can be optimized with step of 2.
+            for col in range(size-2):
+                color = grid[row][col]
+                if color != 0:
+                    blacks = get_blacks(grid, row, col)
+                    if color == -1 and (blacks == 0 or blacks > 2):
+                        updates.append((row, col))
+                    elif color == 1 and blacks == 2:
+                        updates.append((row, col))
+        for row, col in updates:
+            grid[row][col] *= -1
+    return count(grid)
 
 
 if __name__ == "__main__":
     data = read("input.txt")
-    print(solve(data))
+    grid = solve(data)
+    result1 = count(grid)
+    print(result1)
+    print(solve2(grid))
