@@ -25,6 +25,6 @@ def solve2(data):
 
 
 if __name__ == "__main__":
-    data = read('input.txt')
+    data = read('data/day01.txt')
     print(solve(data))
     print(solve2(data))
