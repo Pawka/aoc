@@ -1,3 +1,5 @@
+import operator
+
 from collections import namedtuple, defaultdict
 from enum import IntEnum
 
@@ -36,6 +38,10 @@ class Intcode():
             2: self._mul,
             3: self._input,
             4: self._output,
+            5: self._jump_if_true,
+            6: self._jump_if_false,
+            7: self._less_than,
+            8: self._equal,
             99: self._end
         }
 
@@ -95,6 +101,34 @@ class Intcode():
         a = self.ram.get(self.pc+1, params[0])
         print(">", a)
         self.pc += 2
+
+    def _jump_if_true(self, params):
+        self.__op_jump_if(params, operator.ne)
+
+    def _jump_if_false(self, params):
+        self.__op_jump_if(params, operator.eq)
+
+    def __op_jump_if(self, params, operator):
+        a = self.ram.get(self.pc+1, params[0])
+        if operator(a, 0):
+            self.pc = self.ram.get(self.pc+2, params[1])
+            return
+        self.pc += 3
+
+    def _less_than(self, params):
+        self.__op_compare(params, operator.lt)
+
+    def _equal(self, params):
+        self.__op_compare(params, operator.eq)
+
+    def __op_compare(self, params, op):
+        a = self.ram.get(self.pc+1, params[0])
+        b = self.ram.get(self.pc+2, params[1])
+        value = 0
+        if op(a, b):
+            value = 1
+        self.ram[self.ram[self.pc+3]] = value
+        self.pc += 4
 
     def _end(self, params):
         self.run = False
