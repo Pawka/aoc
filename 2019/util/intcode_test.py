@@ -20,3 +20,9 @@ def test_integration():
     negative_numbers.loadStr("1101,100,-1,4,0")
     negative_numbers.run()
     assert 99 == negative_numbers.ram[4]
+
+    day5 = Intcode()
+    day5.load("data/day05.txt")
+    day5.stdin(1)
+    day5result = day5.run()
+    assert day5result.pop() == 6745903

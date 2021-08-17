@@ -1,6 +1,6 @@
 import operator
 
-from collections import namedtuple, defaultdict
+from collections import namedtuple, defaultdict, deque
 from enum import IntEnum
 
 ParamMode = namedtuple('ParamMode', 'opcode params')
@@ -33,6 +33,8 @@ class Intcode():
     run = True
 
     def __init__(self):
+        self._stdin = deque()
+        self._stdout = []
         self.ops = {
             1: self._add,
             2: self._mul,
@@ -49,6 +51,14 @@ class Intcode():
         with open(filename) as reader:
             self.ram = Memory(map(int, reader.read().rstrip().split(',')))
 
+    def stdin(self, value):
+        """Write value to stdin for reading.
+
+        If value exists in stdin then opcode will read from the stdin instead
+        of user input.
+        """
+        self._stdin.appendleft(int(value))
+
     def loadStr(self, data):
         self.ram = Memory(map(int, data.split(',')))
 
@@ -60,6 +70,7 @@ class Intcode():
         self.reset()
         while self.run and self.pc < len(self.ram):
             self._eval(self.pc)
+        return self._stdout
 
     def _eval(self, pc):
         """Evaluate opcode at program counter (pc)."""
@@ -93,13 +104,17 @@ class Intcode():
         self.pc += 4
 
     def _input(self, params):
-        a = int(input("$ "))
+        if len(self._stdin) > 0:
+            a = self._stdin.pop()
+        else:
+            a = int(input("$ "))
         self.ram[self.ram[self.pc+1]] = a
         self.pc += 2
 
     def _output(self, params):
         a = self.ram.get(self.pc+1, params[0])
         print(">", a)
+        self._stdout.append(a)
         self.pc += 2
 
     def _jump_if_true(self, params):
