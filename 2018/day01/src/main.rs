@@ -21,8 +21,8 @@ fn part_b(filename: &str) {
     let contents = fs::read_to_string(filename).expect("Can't read the file.");
     let numbers = contents.lines().map(|l| l.parse::<i32>().unwrap()).cycle();
 
-    let mut hm: HashSet<i32> = HashSet::new();
-    let mut freq: i32 = 0;
+    let mut hm = HashSet::new();
+    let mut freq = 0;
 
     for n in numbers {
         freq = freq + n;
