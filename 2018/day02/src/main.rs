@@ -3,12 +3,12 @@ use std::fs;
 
 fn main() {
     let filename = "input.txt";
-    part_a(&filename);
-    part_b(&filename);
+    let contents = fs::read_to_string(filename).expect("Can't read the file");
+    part_a(&contents);
+    part_b(&contents);
 }
 
-fn part_a(filename: &str) {
-    let contents = fs::read_to_string(filename).expect("Can't read the file");
+fn part_a(contents: &String) {
     let counts: Vec<i32> = contents
         .lines()
         .map(|l| {
@@ -39,8 +39,7 @@ fn part_a(filename: &str) {
     println!("Day02(A): {}", twos * threes);
 }
 
-fn part_b(filename: &str) {
-    let contents = fs::read_to_string(filename).expect("Can't read the file");
+fn part_b(contents: &String) {
     let lines: Vec<String> = contents.lines().map(|x| x.to_string()).collect();
     let id = find_id(lines).expect("id not found");
     println!("Day02(B): {}", id);
@@ -71,17 +70,13 @@ fn find_id(lines: Vec<String>) -> Option<String> {
 
 fn compare(str1: &String, str2: &String) -> bool {
     let mut diff = 0;
-    let mut i = 0;
-    let ch2 = str2.chars();
-
-    for ch in str1.chars() {
-        if ch != ch2.clone().nth(i).unwrap() {
+    for (ch1, ch2) in str1.chars().zip(str2.chars()) {
+        if ch1 != ch2 {
             diff += 1;
         }
         if diff > 1 {
             break;
         }
-        i += 1;
     }
 
     match diff {
