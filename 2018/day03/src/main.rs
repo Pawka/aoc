@@ -1,4 +1,5 @@
 use regex::Regex;
+use std::collections::HashSet;
 use std::fs;
 
 fn main() {
@@ -18,17 +19,26 @@ struct Claim {
 }
 
 const SIZE: usize = 1000;
-type Matrix = [[u8; SIZE]; SIZE];
+type Matrix = [[isize; SIZE]; SIZE];
+
+const FREE_CELL: isize = 0;
+const OVERLAP_CELL: isize = -1;
 
 fn part_a(contents: &String) {
     let re = Regex::new(r"^#(?P<id>\d+) @ (\d+),(\d+): (\d+)x(\d+)").unwrap();
-    let claims: Vec<Claim> = contents.lines().map(|line| parse(&line, &re)).collect();
-    let mut matrix: Matrix = [[0; SIZE]; SIZE];
-    for claim in &claims {
-        fill(&mut matrix, &claim);
-    }
-    let total = matrix.iter().flatten().filter(|x| **x > 1 as u8).count();
-    println!("Day03(a): {}", total);
+    let mut matrix: Matrix = [[FREE_CELL; SIZE]; SIZE];
+    let mut set = HashSet::new();
+
+    contents
+        .lines()
+        .map(|line| parse(&line, &re))
+        .for_each(|claim| fill(&mut matrix, &mut set, &claim));
+
+    println!(
+        "Day03(a): {}",
+        matrix.iter().flatten().filter(|x| **x < 0).count()
+    );
+    println!("Day03(b): {}", set.iter().nth(0).unwrap());
 }
 
 fn parse(line: &str, re: &Regex) -> Claim {
@@ -42,10 +52,21 @@ fn parse(line: &str, re: &Regex) -> Claim {
     }
 }
 
-fn fill(matrix: &mut Matrix, claim: &Claim) {
+fn fill(matrix: &mut Matrix, set: &mut HashSet<usize>, claim: &Claim) {
+    set.insert(claim.id);
     for i in 0..claim.height {
         for j in 0..claim.width {
-            matrix[claim.top + i][claim.left + j] += 1;
+            match matrix[claim.top + i][claim.left + j] {
+                FREE_CELL => matrix[claim.top + i][claim.left + j] = claim.id as isize,
+                OVERLAP_CELL => {
+                    set.remove(&claim.id);
+                }
+                _ => {
+                    set.remove(&claim.id);
+                    set.remove(&(matrix[claim.top + i][claim.left + j] as usize));
+                    matrix[claim.top + i][claim.left + j] = OVERLAP_CELL;
+                }
+            };
         }
     }
 }
