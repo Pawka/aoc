@@ -7,10 +7,10 @@ use std::fs;
 fn main() {
     let filename = "input.txt";
     let contents = fs::read_to_string(filename).expect("can't read file");
-    part_a(&contents);
+    solve(&contents);
 }
 
-fn part_a(contents: &String) {
+fn solve(contents: &String) {
     let mut lines: Vec<Line> = contents.lines().map(|line| parse(&line)).collect();
     lines.sort_by(|a, b| a.date.cmp(&b.date));
 
@@ -45,15 +45,29 @@ fn part_a(contents: &String) {
         }
     }
 
-    let minute: usize = hm
-        .get(&max_id)
-        .unwrap()
-        .iter()
+    println!(
+        "Day04(a): {}",
+        max_id * get_index_of_max(&hm.get(&max_id).unwrap())
+    );
+    println!(
+        "Day04(b): {}",
+        hm.iter()
+            .max_by(|a, b| {
+                let ma = a.1.iter().max().unwrap();
+                let mb = b.1.iter().max().unwrap();
+                ma.cmp(mb)
+            })
+            .map(|(id, v)| id * get_index_of_max(v))
+            .unwrap()
+    );
+}
+
+fn get_index_of_max(v: &Vec<usize>) -> usize {
+    v.iter()
         .enumerate()
         .max_by(|(_, a), (_, b)| a.cmp(b))
         .map(|(minute, _)| minute)
-        .unwrap();
-    println!("Day04(a): {}", minute * max_id);
+        .unwrap()
 }
 
 #[derive(Debug, PartialEq, Eq)]
