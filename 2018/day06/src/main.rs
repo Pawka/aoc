@@ -8,7 +8,7 @@ fn main() {
     let filename = "input.txt";
     let input: String = fs::read_to_string(filename).expect("can't open file");
     let points = parse(&input);
-    solve_a(&points);
+    solve(&points);
 }
 
 #[derive(Debug)]
@@ -40,7 +40,7 @@ enum Field {
     Point(usize),
 }
 
-fn solve_a(points: &Vec<Point>) {
+fn solve(points: &Vec<Point>) {
     let max_x = points
         .iter()
         .max_by(|a, b| a.x.cmp(&b.x))
@@ -57,9 +57,13 @@ fn solve_a(points: &Vec<Point>) {
     let mut counts = vec![0; points.len()];
     let mut matrix = vec![vec![Field::None; max_x]; max_y];
     let mut inf_points = HashSet::new();
+    let mut within_distance = 0;
     for y in 0..max_y {
         for x in 0..max_x {
             matrix[y][x] = nearest(x, y, &points);
+            if near(x, y, &points, 10000) {
+                within_distance += 1;
+            }
             if let Field::Point(point) = matrix[y][x] {
                 counts[point as usize] += 1;
                 if x == 0 || y == 0 || x == max_x - 1 || y == max_y - 1 {
@@ -70,14 +74,17 @@ fn solve_a(points: &Vec<Point>) {
     }
 
     println!(
-        "{:?}",
+        "Day06(a): {}",
         counts
             .iter()
             .enumerate()
             .filter(|(k, _)| !inf_points.contains(k))
             .map(|(_, v)| v)
             .max()
+            .unwrap()
     );
+
+    println!("Day06(b): {}", within_distance);
 }
 
 fn nearest(x: usize, y: usize, points: &Vec<Point>) -> Field {
@@ -104,4 +111,17 @@ fn nearest(x: usize, y: usize, points: &Vec<Point>) -> Field {
         1 => nearest,
         _ => Field::None,
     }
+}
+
+fn near(x: usize, y: usize, points: &Vec<Point>, limit: usize) -> bool {
+    let mut distance = 0;
+    for p in points.iter() {
+        distance += (isize::abs(p.x as isize - x as isize) + isize::abs(p.y as isize - y as isize))
+            as usize;
+
+        if distance >= limit {
+            return false;
+        }
+    }
+    true
 }
