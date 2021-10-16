@@ -118,7 +118,7 @@ fn solve_b(mut dependencies: SetMap, childs: &SetMap) {
         queue.sort();
     }
 
-    println!("Day08(b): {}", ticks);
+    println!("Day07(b): {}", ticks);
 }
 
 #[derive(Debug)]
