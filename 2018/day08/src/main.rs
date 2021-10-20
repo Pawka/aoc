@@ -34,53 +34,110 @@ fn solve_a(numbers: &Vec<i32>) {
     println!("Day08(a): {}", sum);
 }
 
+#[derive(Debug)]
+struct Node {
+    id: i32,
+    childs: Vec<i32>,
+    metadata: Vec<i32>,
+}
+
+impl Node {
+    fn new(id: i32) -> Node {
+        Node {
+            id: id,
+            childs: Vec::new(),
+            metadata: Vec::new(),
+        }
+    }
+}
+
+struct Ids {
+    stack: Vec<i32>,
+    max: i32,
+}
+
+impl Ids {
+    fn new() -> Ids {
+        Ids {
+            stack: Vec::new(),
+            max: 0,
+        }
+    }
+
+    fn next(&mut self) -> i32 {
+        self.max += 1;
+        self.stack.push(self.max);
+        self.max
+    }
+
+    fn pop(&mut self) -> Option<i32> {
+        self.stack.pop()
+    }
+
+    fn peek(&self) -> Option<&i32> {
+        self.stack.last()
+    }
+}
+
+#[test]
+fn ids_test() {
+    let mut ids = Ids::new();
+    assert_eq!(None, ids.pop());
+    assert_eq!(1, ids.next());
+    assert_eq!(2, ids.next());
+    assert_eq!(3, ids.next());
+    assert_eq!(Some(3), ids.pop());
+    assert_eq!(4, ids.next());
+}
+
 fn solve_b(numbers: &Vec<i32>) {
     let mut childs = Vec::new();
     let mut meta = Vec::new();
-    let mut sum: i32 = 0;
     let mut iter = numbers.iter();
-    let mut values: Vec<Vec<i32>> = Vec::new();
-
-    let mut depth = 0;
+    let mut nodes: Vec<Node> = Vec::new();
+    let mut ids = Ids::new();
     while let Some(n) = iter.next() {
-        let mcount = iter.next().unwrap();
-        if *n > 0 {
-            values.push(Vec::new());
-            childs.push(*n);
-            meta.push(mcount);
-            depth += 1;
-        } else if *n == 0 {
-            let sum = iter.by_ref().take(*mcount as usize).sum::<i32>();
-            values.get_mut(depth - 1).unwrap().push(sum);
-            if let Some(n) = childs.last_mut() {
-                *n -= 1;
-            }
-        }
+        childs.push(*n);
+        meta.push(iter.next().unwrap());
+
+        let node = Node::new(ids.next());
+        nodes.push(node);
 
         while let Some(0) = childs.last() {
             let m = meta.pop().unwrap();
-            let mut s = 0;
-            for i in iter.by_ref().take(*m as usize) {
-                if *i <= values[(depth - 1) as usize].len() as i32 {
-                    s += values[(depth - 1) as usize][(*i - 1) as usize];
-                }
-            }
-            depth -= 1;
-            if depth > 0 {
-                values.get_mut(depth - 1).unwrap().push(s);
-            } else {
-                sum = s;
-            }
-            childs.pop();
+            let id = ids.pop().unwrap();
 
-            if let Some(n) = childs.last_mut() {
-                *n -= 1;
+            nodes
+                .get_mut(id as usize - 1)
+                .unwrap()
+                .metadata
+                .extend(iter.by_ref().take(*m as usize));
+            childs.pop();
+            if let Some(parent) = ids.peek() {
+                nodes.get_mut(*parent as usize - 1).unwrap().childs.push(id);
             }
         }
-    }
-    println!("{:?}", childs);
-    println!("{:?}", meta);
-    println!("{:?}", values);
 
-    println!("Day08(b): {}", sum);
+        if let Some(n) = childs.last_mut() {
+            *n -= 1;
+        }
+    }
+
+    println!("Day08(b): {}", get_sum(&nodes, 0));
+}
+
+fn get_sum(nodes: &Vec<Node>, i: usize) -> i32 {
+    let node = nodes.get(i).unwrap();
+    if node.childs.len() == 0 {
+        return node.metadata.iter().sum();
+    }
+
+    let mut sum: i32 = 0;
+    for m in &node.metadata {
+        if *m as usize <= node.childs.len() {
+            sum += get_sum(nodes, node.childs[*m as usize - 1] as usize - 1);
+        }
+    }
+
+    sum
 }
