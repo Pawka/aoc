@@ -72,16 +72,18 @@ fn main() {
         .map(|l| Point::new(l))
         .collect();
 
-    solve_a(points.clone().as_mut());
+    solve(points.clone().as_mut());
 }
 
-fn solve_a(points: &mut Vec<Point>) {
+fn solve(points: &mut Vec<Point>) {
     let mut last = i32::MAX;
+    let mut sec = 0;
     loop {
         let min_y = *points.iter().min_by_key(|y| y.y).unwrap();
         let max_y = *points.iter().max_by_key(|y| y.y).unwrap();
         let delta = i32::abs(max_y.y - min_y.y);
         if delta > last {
+            sec -= 1;
             break;
         }
         last = delta;
@@ -89,12 +91,14 @@ fn solve_a(points: &mut Vec<Point>) {
         for p in points.iter_mut() {
             p.migrate();
         }
+        sec += 1;
     }
 
     for p in points.iter_mut() {
         p.unmigrate();
     }
     print(points);
+    println!("Seconds: {}", sec);
 }
 
 fn print(points: &mut Vec<Point>) {
