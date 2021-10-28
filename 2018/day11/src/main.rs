@@ -13,20 +13,25 @@ fn solve(serial: i32) {
     }
 
     let mut max = 0;
-    let mut coord = (0, 0);
-    for y in 0..size - 3 {
-        for x in 0..size - 3 {
-            let mut sum = 0;
-            for j in 0..3 {
-                sum += points[(x + j + y * size) as usize];
-                sum += points[(x + j + y * size + size) as usize];
-                sum += points[(x + j + y * size + 2 * size) as usize];
-            }
-            if sum > max {
-                max = sum;
-                coord = (y + 1, x + 1);
+    let mut coord = (0, 0, 0);
+
+    for grid_size in 3..300 {
+        println!("Grid size: {}", grid_size);
+        for y in 0..size - grid_size {
+            for x in 0..size - grid_size {
+                let mut sum = 0;
+                for j in 0..grid_size {
+                    for k in 0..grid_size {
+                        sum += points[(x + j + y * size + k * size) as usize];
+                    }
+                }
+                if sum > max {
+                    max = sum;
+                    coord = (y + 1, x + 1, grid_size);
+                }
             }
         }
+        println!("Power: {}, {:?}", max, coord);
     }
     println!("Power: {}, {:?}", max, coord);
 }
