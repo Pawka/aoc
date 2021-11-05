@@ -28,14 +28,28 @@ fn main() {
 
     let mut positions = HashSet::new();
     loop {
+        let mut crash: HashSet<(usize, usize)> = HashSet::new();
         for cart in &mut carts {
-            positions.remove(&(cart.x, cart.y));
+            let pos = (cart.x, cart.y);
+            if crash.contains(&pos) {
+                continue;
+            }
+            positions.remove(&pos);
             cart.ride(&grid);
             if positions.insert((cart.x, cart.y)) == false {
-                println!("Day13(a): {},{}", cart.x, cart.y);
+                crash.insert((cart.x, cart.y));
+            }
+        }
+        if !crash.is_empty() {
+            println!("{:?}", crash);
+            carts.retain(|&c| !crash.contains(&(c.x, c.y)));
+            positions.retain(|&c| !crash.contains(&(c.0, c.1)));
+            if positions.len() == 1 {
+                println!("{:?}", positions);
                 return;
             }
         }
+
         carts.sort_by(|a, b| {
             if a.y == b.y {
                 return a.x.cmp(&b.x);
@@ -123,7 +137,7 @@ fn direction_test() {
     assert_eq!(Down, val.next().next());
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 struct Cart {
     x: usize,
     y: usize,
