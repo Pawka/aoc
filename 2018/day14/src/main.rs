@@ -43,6 +43,11 @@ fn solve_b(number: &str) -> usize {
     let mut e2: usize = 1;
 
     let want = number.to_string();
+    let w2: Vec<usize> = number
+        .chars()
+        .into_iter()
+        .map(|x| x.to_digit(10).unwrap() as usize)
+        .collect();
 
     loop {
         let ext = get_new_receipes(receipes[e1] + receipes[e2]);
@@ -50,24 +55,17 @@ fn solve_b(number: &str) -> usize {
         e1 = (e1 + receipes[e1] + 1) % receipes.len();
         e2 = (e2 + receipes[e2] + 1) % receipes.len();
 
-        let end: String = receipes
-            .iter()
-            .rev()
-            .take(number.to_string().len() + 1)
-            .rev()
-            .fold(String::new(), |mut acc, x| {
-                acc.push_str(&x.to_string());
-                acc
-            });
-
-        if want == end.get(1..).unwrap() {
-            return receipes.len() - want.len();
+        if receipes.len() <= w2.len() {
+            continue;
         }
-        if let Some(_end) = end.get(..5) {
-            if want == _end {
-                return receipes.len() - want.len() - 1;
-            }
-        };
+
+        let end = receipes.get(receipes.len() - w2.len() - 1..).unwrap();
+        if end.get(1..).unwrap() == w2 {
+            return receipes.len() - w2.len();
+        }
+        if end.get(..want.len()).unwrap() == w2 {
+            return receipes.len() - w2.len() - 1;
+        }
     }
 }
 
