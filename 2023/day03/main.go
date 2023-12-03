@@ -85,23 +85,29 @@ func partA(lines []string) {
 	}
 
 	sums := make(map[string]int)
+	gears := make(map[string][]int)
 	for _, d := range digits {
 		n, _ := strconv.Atoi(d.Str)
 		for _, p := range digitPositions(d) {
 			sums[p] += n
+			if len(gears[p]) == 0 {
+				gears[p] = make([]int, 0)
+			}
+			gears[p] = append(gears[p], n)
 		}
 	}
-	for k, d := range sums {
-		fmt.Printf("%s:\t%d\n", k, d)
-	}
-	result := 0
+	resultA := 0
+	resultB := 0
 	for _, d := range chars {
-		fmt.Printf("%#v\n", d)
-		fmt.Println(sums[d.Pos()])
-		result += sums[d.Pos()]
+		p := d.Pos()
+		resultA += sums[p]
+		if d.Str == "*" && len(gears[p]) == 2 {
+			resultB += (gears[p][0] * gears[p][1])
+		}
 	}
 
-	fmt.Println(result)
+	fmt.Println(resultA)
+	fmt.Println(resultB)
 }
 
 func digitPositions(digit *Token) []string {
