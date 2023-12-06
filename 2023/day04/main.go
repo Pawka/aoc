@@ -1,34 +1,16 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"log"
-	"os"
 	"strings"
+
+	"github.com/Pawka/aoc/2023/pkg"
 )
 
 const input = "input.txt"
 
 func main() {
-	file, err := os.Open(input)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	var (
-		scanner = bufio.NewScanner(file)
-		lines   = make([]string, 0)
-	)
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
-	}
-
+	lines := pkg.ReadLines(input)
 	partA(lines)
 	partB(lines)
 }
