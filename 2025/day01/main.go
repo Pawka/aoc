@@ -8,7 +8,13 @@ import (
 	"strconv"
 )
 
-const input = "input.txt"
+// Wrong answers (B):
+// 5393
+
+const (
+	input = "input.txt"
+	// input = "input-demo.txt"
+)
 
 func main() {
 	file, err := os.Open(input)
@@ -29,14 +35,83 @@ func main() {
 		log.Fatal(err)
 	}
 
+	assert(calcB(0, 100), 1)
+	assert(calcB(0, 101), 1)
+	assert(calcB(0, 200), 2)
+	assert(calcB(1, 100), 1)
+	assert(calcB(1, 101), 1)
+	assert(calcB(1, 200), 2)
+	assert(calcB(1, 1), 0)
+	assert(calcB(99, 1), 1)
+
+	assert(calcB(0, -100), 1)
+	assert(calcB(0, -101), 1)
+	assert(calcB(1, -101), 2)
+	assert(calcB(0, -200), 2)
+	assert(calcB(0, -1), 0)
+
+	assert(calcB(1, -1), 1)
+	assert(calcB(0, 0), 0)
+
+	assert(calcB(1, -2), 1)
+	assert(calcB(1, -200), 2)
+	assert(calcB(1, -201), 3)
+	assert(calcB(1, -202), 3)
+
+	assert(calcB(50, -50), 1)
+	assert(calcB(50, 150), 2)
+	assert(calcB(50, -150), 2)
+
 	solve(lines)
 }
 
-func solve(lines []string) {
-	pos := 50
-	count := 0
+func assert(got, want int) {
+	if got != want {
+		failure := fmt.Sprintf("got(%d) != want(%d)", got, want)
+		panic(failure)
+	}
+}
 
-	fmt.Println(pos)
+func calcB(pos, turn int) int {
+	var (
+		res    int
+		newPos = pos + turn
+	)
+
+	res += newPos / 100
+	if res == 0 {
+
+		if pos == newPos {
+			return 0
+		}
+
+		if newPos == 0 {
+			return 1
+		}
+
+		if pos > 0 && newPos < 0 {
+			res += 1
+		}
+	}
+
+	if res < 0 {
+		res *= -1
+	}
+
+	if newPos/100 != 0 && pos > 0 && newPos < 0 {
+		res += 1
+	}
+
+	return res
+}
+
+func solve(lines []string) {
+	var (
+		pos    = 50
+		countA = 0
+		countB = 0
+	)
+
 	for _, line := range lines {
 		add, err := strconv.Atoi(line[1:])
 		if err != nil {
@@ -46,17 +121,16 @@ func solve(lines []string) {
 			add = add * -1
 		}
 
+		countB += calcB(pos, add)
 		pos = (pos + add) % 100
-		fmt.Println(line, pos)
 		if pos < 0 {
 			pos = 100 + pos
 		}
-		fmt.Println(line, add, pos)
 
 		if pos == 0 {
-			count += 1
+			countA += 1
 		}
 
 	}
-	fmt.Println(pos, count)
+	fmt.Println(countA, countB)
 }
