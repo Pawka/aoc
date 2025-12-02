@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -36,6 +37,7 @@ func main() {
 	parts := strings.Split(line, ",")
 	ranges := make([]Range, len(parts))
 	maxNumberLen := 0
+	maxNumber := 0
 	for i, p := range parts {
 		r := strings.Split(p, "-")
 		from, _ := strconv.Atoi(r[0])
@@ -49,47 +51,61 @@ func main() {
 		if len(r[1]) > maxNumberLen {
 			maxNumberLen = len(r[1])
 		}
+		if from > maxNumber {
+			maxNumber = from
+		}
+		if to > maxNumber {
+			maxNumber = to
+		}
 	}
 
 	max, _ := strconv.Atoi(strings.Repeat(fmt.Sprintf("%d", 9), maxNumberLen/2))
-	candidateIDs := pregenerateIDs(max)
-
+	candidateIDs := pregenerateIDs(max, 2, maxNumber)
 	solve(ranges, candidateIDs)
+
+	candidateIDsB := pregenerateIDs(max, 10, maxNumber)
+	solve(ranges, candidateIDsB)
 }
 
 type Range struct {
 	From, To int
 }
 
-func pregenerateIDs(max int) []int {
-	res := make([]int, 0, 10)
+func pregenerateIDs(max, count int, maxVal int) []int {
+	rMap := make(map[int]bool)
 
 	for i := 1; i <= max; i++ {
-		n, _ := strconv.Atoi(fmt.Sprintf("%d%d", i, i))
-		res = append(res, n)
+		for j := 2; j <= count; j++ {
+			n, _ := strconv.Atoi(strings.Repeat(fmt.Sprintf("%d", i), j))
+			if n > maxVal {
+				break
+			}
+			rMap[n] = true
+		}
 	}
+
+	res := make([]int, 0, len(rMap))
+	for k, _ := range rMap {
+		res = append(res, k)
+	}
+	slices.Sort(res)
 
 	return res
 }
 
 func solve(ranges []Range, candidateIDs []int) {
-
-	var (
-		resultA = 0
-	)
+	var result int
 
 	for _, r := range ranges {
-		fmt.Println(r.To, "-", r.From)
 		for _, id := range candidateIDs {
 			if id > r.To {
 				break
 			}
 			if id >= r.From {
-				fmt.Println(id)
-				resultA += id
+				result += id
 			}
 		}
 	}
 
-	fmt.Println(resultA)
+	fmt.Println(result)
 }
