@@ -8,9 +8,6 @@ import (
 	"strconv"
 )
 
-// Wrong answers (B):
-// 5393
-
 const (
 	input = "input.txt"
 	// input = "input-demo.txt"
