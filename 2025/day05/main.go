@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -55,11 +56,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	solve(ranges, ingredients)
+	solveA(ranges, ingredients)
+	solveB(ranges)
 }
 
-func solve(ranges []Range, ingredients []int) {
-
+func solveA(ranges []Range, ingredients []int) {
 	var total int
 	for _, i := range ingredients {
 		for _, r := range ranges {
@@ -71,4 +72,41 @@ func solve(ranges []Range, ingredients []int) {
 	}
 
 	fmt.Println(total)
+}
+
+func solveB(ranges []Range) {
+	var i = 0
+
+	for {
+	loop:
+		for j := i + 1; j < len(ranges); j++ {
+			var (
+				current = ranges[i]
+				r       = ranges[j]
+			)
+
+			if current.to < r.from || current.from > r.to {
+				continue
+			}
+
+			if r.from < current.from {
+				ranges[i].from = r.from
+			}
+			if r.to > current.to {
+				ranges[i].to = r.to
+			}
+			ranges = slices.Delete(ranges, j, j+1)
+			goto loop
+		}
+		if i == len(ranges) {
+			break
+		}
+		i++
+	}
+
+	var sum int
+	for _, r := range ranges {
+		sum += r.to - r.from + 1
+	}
+	fmt.Println(sum)
 }
